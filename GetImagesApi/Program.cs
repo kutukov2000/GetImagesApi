@@ -1,8 +1,12 @@
+using GetImagesApi.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<MyAppContext>(opt =>
+    opt.UseSqlite(builder.Configuration.GetConnectionString("WebImagesConnection")));
 
 builder.Services.AddControllers();
 
@@ -33,5 +37,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.SeedData();
 
 app.Run();
