@@ -1,5 +1,7 @@
 using GetImagesApi.Data;
 using GetImagesApi.Data.Entities.Identity;
+using GetImagesApi.Interfaces;
+using GetImagesApi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -21,6 +23,8 @@ builder.Services.AddIdentity<UserEntity, RoleEntity>(options =>
 })
     .AddEntityFrameworkStores<MyAppContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 builder.Services.AddControllers();
 
