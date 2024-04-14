@@ -50,17 +50,7 @@ namespace GetImagesApi.Controllers
             };
 
             if (categoryDTO.Image != null)
-            {
-                var imageName = $"{Guid.NewGuid()}.jpg";
-                var imagePath = Path.Combine(Environment.CurrentDirectory, "images", imageName);
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    await categoryDTO.Image.CopyToAsync(stream);
-                }
-
-                category.Image = imageName;
-            }
+                await SaveImage(category, categoryDTO);
 
             _appContext.Categories.Add(category);
             _appContext.SaveChanges();
@@ -80,17 +70,7 @@ namespace GetImagesApi.Controllers
             category.Description = categoryDTO.Description;
 
             if (categoryDTO.Image != null)
-            {
-                string imageName = $"{Guid.NewGuid()}.jpg";
-                string imagePath = Path.Combine(Environment.CurrentDirectory, "images", imageName);
-
-                using (var stream = new FileStream(imagePath, FileMode.Create))
-                {
-                    await categoryDTO.Image.CopyToAsync(stream);
-                }
-
-                category.Image = imageName;
-            }
+                await SaveImage(category, categoryDTO);
 
             _appContext.Entry(category).State = EntityState.Modified;
 
@@ -134,6 +114,17 @@ namespace GetImagesApi.Controllers
             _appContext.SaveChanges();
 
             return NoContent();
+        }
+
+        private async Task SaveImage(CategoryEntity category, CategoryDTO categoryDTO)
+        {
+            string imageName = $"{Guid.NewGuid()}.jpg";
+            string imagePath = Path.Combine(Environment.CurrentDirectory, "images", imageName);
+
+            using (var stream = new FileStream(imagePath, FileMode.Create))
+                await categoryDTO.Image.CopyToAsync(stream);
+
+            category.Image = imageName;
         }
     }
 }
