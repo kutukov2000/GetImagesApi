@@ -22,7 +22,6 @@ namespace GetImagesApi.Controllers
         public IActionResult Get()
         {
             var categories = _appContext.Categories.ToList();
-
             return Ok(categories);
         }
 
@@ -34,17 +33,12 @@ namespace GetImagesApi.Controllers
             if (category == null)
                 return NotFound();
 
-            var categoryDTO = new CategoryDTO
-            {
-                Name = category.Name,
-                Description = category.Description
-            };
-            return Ok(categoryDTO);
+            return Ok(category);
         }
 
         // POST: api/categories
         [HttpPost]
-        public IActionResult Create([FromBody] CategoryDTO categoryDTO)
+        public async Task<IActionResult> Create([FromForm] CategoryDTO categoryDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -55,15 +49,28 @@ namespace GetImagesApi.Controllers
                 Description = categoryDTO.Description
             };
 
+            if (categoryDTO.Image != null)
+            {
+                var imageName = $"{Guid.NewGuid()}.jpg";
+                var imagePath = Path.Combine(Environment.CurrentDirectory, "images", imageName);
+
+                using (var stream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await categoryDTO.Image.CopyToAsync(stream);
+                }
+
+                category.Image = imageName;
+            }
+
             _appContext.Categories.Add(category);
             _appContext.SaveChanges();
 
-            return CreatedAtAction(nameof(GetById), new { id = category.Id }, categoryDTO);
+            return Created($"/api/Categories/{category.Id}", category);
         }
 
         // PUT: api/categories/5
         [HttpPut("{id}")]
-        public IActionResult Edit(int id, [FromBody] CategoryDTO categoryDTO)
+        public async Task<IActionResult> Edit(int id, [FromForm] CategoryDTO categoryDTO)
         {
             var category = _appContext.Categories.Find(id);
             if (category == null)
@@ -71,6 +78,19 @@ namespace GetImagesApi.Controllers
 
             category.Name = categoryDTO.Name;
             category.Description = categoryDTO.Description;
+
+            if (categoryDTO.Image != null)
+            {
+                string imageName = $"{Guid.NewGuid()}.jpg";
+                string imagePath = Path.Combine(Environment.CurrentDirectory, "images", imageName);
+
+                using (var stream = new FileStream(imagePath, FileMode.Create))
+                {
+                    await categoryDTO.Image.CopyToAsync(stream);
+                }
+
+                category.Image = imageName;
+            }
 
             _appContext.Entry(category).State = EntityState.Modified;
 
@@ -101,16 +121,19 @@ namespace GetImagesApi.Controllers
             if (category == null)
                 return NotFound();
 
+            if (!string.IsNullOrEmpty(category.Image))
+            {
+                var imagePath = Path.Combine(Environment.CurrentDirectory, "images", category.Image);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
+            }
+
             _appContext.Categories.Remove(category);
             _appContext.SaveChanges();
 
-            var categoryDTO = new CategoryDTO
-            {
-                Name = category.Name,
-                Description = category.Description
-            };
-
-            return Ok(categoryDTO);
+            return NoContent();
         }
     }
 }

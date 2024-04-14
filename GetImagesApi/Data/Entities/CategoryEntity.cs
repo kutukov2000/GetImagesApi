@@ -14,5 +14,8 @@ namespace GetImagesApi.Data.Entities
 
         [StringLength(4000)]
         public string Description { get; set; }
+
+        [StringLength(100)]
+        public string Image { get; set; }
     }
 }
