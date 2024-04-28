@@ -36,5 +36,39 @@ namespace GetImagesApi.Controllers
             var token = await _jwtTokenService.CreateToken(user);
             return Ok(new { token });
         }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromForm] RegisterViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = new UserEntity { Email = model.Email, UserName = model.Username };
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (model.Image != null)
+                user.Image = await SaveImage(model.Image);
+
+            if (result.Succeeded)
+            {
+                var token = await _jwtTokenService.CreateToken(user);
+                return Ok(new { token });
+            }
+
+            return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+        }
+
+        private async Task<string> SaveImage(IFormFile image)
+        {
+            string imageName = $"{Guid.NewGuid()}.jpg";
+            string imagePath = Path.Combine(Environment.CurrentDirectory, "images", imageName);
+
+            using (var stream = new FileStream(imagePath, FileMode.Create))
+                await image.CopyToAsync(stream);
+
+            return imageName;
+        }
     }
 }
