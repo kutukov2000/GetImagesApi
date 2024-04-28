@@ -38,9 +38,9 @@ namespace GetImagesApi.Controllers
 
         // GET: api/categories
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var user = GetUserAuthAsync();
+            var user = await GetUserAuthAsync();
             var categories = _appContext.Categories
                 .Where(u => u.UserId == user.Id)
                 .Select(c => _mapper.Map<CategoryItemModel>(c))
@@ -63,7 +63,7 @@ namespace GetImagesApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CategoryDTO categoryDTO)
         {
-            var user = GetUserAuthAsync();
+            var user = await GetUserAuthAsync();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -88,7 +88,7 @@ namespace GetImagesApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Edit(int id, [FromForm] CategoryDTO categoryDTO)
         {
-            var user = GetUserAuthAsync();
+            var user = await GetUserAuthAsync();
 
             var category = _appContext.Categories.Find(id);
             if (category == null)
@@ -124,9 +124,9 @@ namespace GetImagesApi.Controllers
 
         // DELETE: api/categories/5
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var user = GetUserAuthAsync();
+            var user = await GetUserAuthAsync();
 
             var category = _appContext.Categories
                 .Where(x => x.UserId == id)
