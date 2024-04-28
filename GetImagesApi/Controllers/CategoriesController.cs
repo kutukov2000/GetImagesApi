@@ -129,7 +129,7 @@ namespace GetImagesApi.Controllers
             var user = await GetUserAuthAsync();
 
             var category = _appContext.Categories
-                .Where(x => x.UserId == id)
+                .Where(x => x.UserId == user.Id)
                 .SingleOrDefault(x => x.Id == id);
 
             if (category == null)
